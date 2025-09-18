@@ -74,13 +74,6 @@ El sistema utiliza 4 tablas principales:
 - `presupuesto_articulos` - Artículos por presupuesto
 - `partida_valores` - Valores por partida y mes
 
-## Partidas presupuestarias
-
-- **60311** - Materiales para funcionamiento
-- **63721** - Publicaciones e impresiones  
-- **65311** - Suscripciones y publicaciones
-- **63815** - Servicios de formación juvenil
-
 ## Despliegue
 
 **Build para producción:**
