@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+:root {
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+  font-weight: 400;
+  color: #1f2937;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+/* Estilos personalizados para el sistema de presupuesto */
+
+/* Estilos específicos para inputs de partidas */
+.partida-input {
+  width: 100%;
+  padding: 2px 4px;
+  border: 1px solid #d1d5db;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  text-align: center;
+  background-color: #fff;
+}
+
+.partida-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 1px #3b82f6;
+  background-color: #f0f9ff;
+}
+
+.partida-input:hover {
+  border-color: #9ca3af;
+}
+
+/* Indicador de valor combinado para marzo y agosto */
+.valor-combinado {
+  background-color: #f0fdf4;
+  border-color: #22c55e;
+}
