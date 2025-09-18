@@ -10,7 +10,14 @@ Sistema web moderno para la gestión de presupuestos operativos de la Biblioteca
 - **Exportación a Excel** - Informes profesionales con múltiples hojas
 - **Persistencia completa** - Todos los datos se guardan en tiempo real
 - **Interfaz moderna** - Diseño responsive con Tailwind CSS
+- **Gestión de catálogo de materiales** - CRUD completo
+- **Creación de presupuestos** - Agregar artículos con cantidades por mes
+- **Partidas presupuestarias** - Organización automática por códigos ERP
+- **Exportación a Excel** - Informes profesionales con múltiples hojas
+- **Persistencia completa** - Todos los datos se guardan en tiempo real
+- **Interfaz moderna** - Diseño responsive con Tailwind CSS
 
+## Tecnologías
 ## Tecnologías
 
 - **Frontend:** React 19 + Vite 7
@@ -19,6 +26,7 @@ Sistema web moderno para la gestión de presupuestos operativos de la Biblioteca
 - **Exportación:** SheetJS (xlsx)
 - **Despliegue:** Vercel/Netlify ready
 
+## Instalación
 ## Instalación
 
 1. **Clonar el repositorio:**
@@ -47,6 +55,7 @@ npm run dev
 ```
 
 ## Estructura del proyecto
+## Estructura del proyecto
 
 ```
 src/
@@ -66,7 +75,7 @@ src/
     └── excelExport.js      # Exportación Excel
 ```
 
-## 🗄️ Base de datos
+## Base de datos
 
 El sistema utiliza 4 tablas principales:
 - `materiales` - Catálogo de materiales
@@ -87,9 +96,11 @@ npm run preview
 ```
 
 ## Licencia
+## Licencia
 
 MIT License - Universidad Ricardo Palma
 
+## Desarrollo
 ## Desarrollo
 
 Desarrollado para la Facultad de Ingeniería - Centro de Documentación de la Universidad Ricardo Palma.+ Vite
