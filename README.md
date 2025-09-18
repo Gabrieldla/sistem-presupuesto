@@ -1,17 +1,17 @@
-# 📊 Sistema de Presupuesto - Biblioteca Virtual de Ingeniería
+#  Sistema de Presupuesto - Biblioteca Virtual de Ingeniería
 
 Sistema web moderno para la gestión de presupuestos operativos de la Biblioteca Virtual de Ingeniería de la Universidad Ricardo Palma.
 
-## ✨ Características
+##  Características
 
-- 🗂️ **Gestión de catálogo de materiales** - CRUD completo
-- 📋 **Creación de presupuestos** - Agregar artículos con cantidades por mes
-- 💰 **Partidas presupuestarias** - Organización automática por códigos ERP
-- 📊 **Exportación a Excel** - Informes profesionales con múltiples hojas
-- 💾 **Persistencia completa** - Todos los datos se guardan en tiempo real
-- 🎨 **Interfaz moderna** - Diseño responsive con Tailwind CSS
+- **Gestión de catálogo de materiales** - CRUD completo
+- **Creación de presupuestos** - Agregar artículos con cantidades por mes
+- **Partidas presupuestarias** - Organización automática por códigos ERP
+- **Exportación a Excel** - Informes profesionales con múltiples hojas
+- **Persistencia completa** - Todos los datos se guardan en tiempo real
+- **Interfaz moderna** - Diseño responsive con Tailwind CSS
 
-## 🛠️ Tecnologías
+## Tecnologías
 
 - **Frontend:** React 19 + Vite 7
 - **Estilos:** Tailwind CSS 4
@@ -19,7 +19,7 @@ Sistema web moderno para la gestión de presupuestos operativos de la Biblioteca
 - **Exportación:** SheetJS (xlsx)
 - **Despliegue:** Vercel/Netlify ready
 
-## 🚀 Instalación
+## Instalación
 
 1. **Clonar el repositorio:**
 ```bash
@@ -46,7 +46,7 @@ VITE_SUPABASE_ANON_KEY=tu_supabase_anon_key
 npm run dev
 ```
 
-## 📁 Estructura del proyecto
+## Estructura del proyecto
 
 ```
 src/
@@ -66,7 +66,7 @@ src/
     └── excelExport.js      # Exportación Excel
 ```
 
-## 🗄️ Base de datos
+## Base de datos
 
 El sistema utiliza 4 tablas principales:
 - `materiales` - Catálogo de materiales
@@ -74,14 +74,14 @@ El sistema utiliza 4 tablas principales:
 - `presupuesto_articulos` - Artículos por presupuesto
 - `partida_valores` - Valores por partida y mes
 
-## 📊 Partidas presupuestarias
+## Partidas presupuestarias
 
 - **60311** - Materiales para funcionamiento
 - **63721** - Publicaciones e impresiones  
 - **65311** - Suscripciones y publicaciones
 - **63815** - Servicios de formación juvenil
 
-## 🏗️ Despliegue
+## Despliegue
 
 **Build para producción:**
 ```bash
@@ -93,11 +93,11 @@ npm run build
 npm run preview
 ```
 
-## 📝 Licencia
+## Licencia
 
 MIT License - Universidad Ricardo Palma
 
-## 👨‍💻 Desarrollo
+## Desarrollo
 
 Desarrollado para la Facultad de Ingeniería - Centro de Documentación de la Universidad Ricardo Palma.+ Vite
 
