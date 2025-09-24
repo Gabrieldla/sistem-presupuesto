@@ -1,10 +1,14 @@
+import { AuthProvider } from './hooks/useAuth.jsx'
+import ProtectedRoute from './components/ProtectedRoute'
 import BudgetSystem from './components/BudgetSystem'
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <BudgetSystem />
-    </div>
+    <AuthProvider>
+      <ProtectedRoute>
+        <BudgetSystem />
+      </ProtectedRoute>
+    </AuthProvider>
   )
 }
 

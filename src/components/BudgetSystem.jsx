@@ -7,8 +7,10 @@ import TablaArticulos from './TablaArticulos'
 import ResumenPartidas from './ResumenPartidas'
 import GestorMateriales from './GestorMateriales'
 
+import AdminNav from './AdminNav'
+
 const BudgetSystem = () => {
-  const [vistaActual, setVistaActual] = useState('presupuesto') // 'presupuesto' o 'catalogo'
+  const [vistaActual, setVistaActual] = useState('presupuesto') // 'presupuesto', 'catalogo'
   const [articulosPresupuesto, setArticulosPresupuesto] = useState([])
   const [materialesDisponibles, setMaterialesDisponibles] = useState([])
   const [valoresPartidas, setValoresPartidas] = useState(() => {
@@ -318,8 +320,12 @@ const BudgetSystem = () => {
   }
 
   return (
-    <div className="min-h-screen p-4">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gray-50">
+      {/* Navegación de admin */}
+      <AdminNav />
+      
+      <div className="p-4">
+        <div className="max-w-7xl mx-auto">
         {/* Notificación bonita */}
         {notificacion && (
           <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-2 duration-300">
@@ -356,24 +362,7 @@ const BudgetSystem = () => {
         )}
         
         {/* Header con imagen */}
-        <div className="mb-6">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center justify-center space-x-6">
-              {/* Imagen de la biblioteca */}
-              <div className="flex-shrink-0">
-                <img 
-                  src="/logo_bvi-2021.png" 
-                  alt="Biblioteca Virtual de Ingeniería" 
-                  className="h-16 w-16 object-contain"
-                />
-              </div>
-              {/* Título */}
-              <div className="text-center">
-                <h1 className="text-2xl font-bold text-gray-800">Sistema de presupuesto Biblioteca Virtual de Ingeniería</h1>
-              </div>
-            </div>
-          </div>
-        </div>
+
 
         {/* Navegación por pestañas simplificada */}
         <div className="bg-white rounded-lg shadow-md mb-6">
@@ -399,6 +388,7 @@ const BudgetSystem = () => {
               >
                 ⚙️ Gestionar Catálogo ({materialesDisponibles.length})
               </button>
+
             </nav>
           </div>
         </div>
@@ -505,6 +495,7 @@ const BudgetSystem = () => {
             />
           </div>
         )}
+        </div>
       </div>
     </div>
   )

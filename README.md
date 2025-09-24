@@ -2,14 +2,9 @@
 
 Sistema web moderno para la gestión de presupuestos operativos de la Biblioteca Virtual de Ingeniería de la Universidad Ricardo Palma.
 
-## Características
+## ✨ Características
 
-- **Gestión de catálogo de materiales** - CRUD completo
-- **Creación de presupuestos** - Agregar artículos con cantidades por mes
-- **Partidas presupuestarias** - Organización automática por códigos ERP
-- **Exportación a Excel** - Informes profesionales con múltiples hojas
-- **Persistencia completa** - Todos los datos se guardan en tiempo real
-- **Interfaz moderna** - Diseño responsive con Tailwind CSS
+- **Autenticación Supabase** - Login seguro y simple
 - **Gestión de catálogo de materiales** - CRUD completo
 - **Creación de presupuestos** - Agregar artículos con cantidades por mes
 - **Partidas presupuestarias** - Organización automática por códigos ERP
@@ -17,21 +12,20 @@ Sistema web moderno para la gestión de presupuestos operativos de la Biblioteca
 - **Persistencia completa** - Todos los datos se guardan en tiempo real
 - **Interfaz moderna** - Diseño responsive con Tailwind CSS
 
-## Tecnologías
-## Tecnologías
+## 🚀 Tecnologías
 
 - **Frontend:** React 19 + Vite 7
 - **Estilos:** Tailwind CSS 4
 - **Base de datos:** Supabase (PostgreSQL)
+- **Autenticación:** Supabase Auth
 - **Exportación:** SheetJS (xlsx)
 - **Despliegue:** Vercel/Netlify ready
 
-## Instalación
-## Instalación
+## 📦 Instalación
 
 1. **Clonar el repositorio:**
 ```bash
-git clone https://github.com/tu-usuario/sistem-presupuesto.git
+git clone https://github.com/Gabrieldla/sistem-presupuesto.git
 cd sistem-presupuesto
 ```
 
@@ -42,7 +36,6 @@ npm install
 
 3. **Configurar Supabase:**
    - Crear proyecto en [Supabase](https://supabase.com)
-   - Ejecutar el script `supabase-setup.sql` en el SQL Editor
    - Crear archivo `.env` con:
 ```
 VITE_SUPABASE_URL=tu_supabase_url
@@ -54,28 +47,31 @@ VITE_SUPABASE_ANON_KEY=tu_supabase_anon_key
 npm run dev
 ```
 
-## Estructura del proyecto
-## Estructura del proyecto
+## 🏗️ Estructura del proyecto
 
 ```
 src/
-├── components/          # Componentes React
+├── components/              # Componentes React
 │   ├── BudgetSystem.jsx    # Componente principal
+│   ├── Login.jsx           # Sistema de autenticación
+│   ├── ProtectedRoute.jsx  # Rutas protegidas
+│   ├── AdminNav.jsx        # Navegación superior
 │   ├── ArticuloSelector.jsx # Selector de artículos
 │   ├── TablaArticulos.jsx   # Tabla de artículos
 │   ├── ResumenPartidas.jsx  # Resumen por partidas
 │   └── GestorMateriales.jsx # Gestión de catálogo
-├── hooks/               # Custom hooks
+├── hooks/                   # Custom hooks
+│   ├── useAuth.jsx         # Hook de autenticación
 │   └── useSupabase.js      # Hook para BD
-├── lib/                 # Configuraciones
+├── lib/                     # Configuraciones
 │   └── supabase.js         # Cliente Supabase
-├── types/               # Tipos y estructuras
+├── types/                   # Tipos y estructuras
 │   └── budget.js           # Definiciones de presupuesto
-└── utils/               # Utilidades
+└── utils/                   # Utilidades
     └── excelExport.js      # Exportación Excel
 ```
 
-## Base de datos
+## 🗄️ Base de datos
 
 El sistema utiliza 4 tablas principales:
 - `materiales` - Catálogo de materiales
@@ -83,7 +79,14 @@ El sistema utiliza 4 tablas principales:
 - `presupuesto_articulos` - Artículos por presupuesto
 - `partida_valores` - Valores por partida y mes
 
-## Despliegue
+## 🔐 Autenticación
+
+Sistema ultra simplificado:
+- **Solo login** - No hay registro en la aplicación
+- **Gestión manual** - Crear usuarios directamente en Supabase Auth
+- **Acceso inmediato** - Usuario creado = acceso al sistema
+
+## 🚀 Despliegue
 
 **Build para producción:**
 ```bash
@@ -95,23 +98,10 @@ npm run build
 npm run preview
 ```
 
-## Licencia
-## Licencia
+## 📄 Licencia
 
 MIT License - Universidad Ricardo Palma
 
-## Desarrollo
-## Desarrollo
+## 👨‍💻 Desarrollo
 
-Desarrollado para la Facultad de Ingeniería - Centro de Documentación de la Universidad Ricardo Palma.+ Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Desarrollado para la Facultad de Ingeniería - Centro de Documentación de la Universidad Ricardo Palma.
