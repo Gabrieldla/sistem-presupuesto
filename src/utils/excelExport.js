@@ -310,10 +310,11 @@ export const formatearResumenPartidasParaExcel = (articulos, valoresPartidas, pa
   const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'set', 'oct', 'nov', 'dic']
   
   partidasPresupuestarias.forEach(partida => {
-    // Obtener artículos de esta partida que están en el presupuesto
-    const articulosDePartida = articulos.filter(art => 
-      partida.articulos.includes(art.codigo)
-    )
+    // Para la partida de MATERIALES PARA FUNCIONAMIENTO (60311), incluir TODOS los artículos
+    // Para las otras partidas, no incluir ningún artículo (solo valores base)
+    const articulosDePartida = partida.codigo === "60311" 
+      ? articulos  // Todos los artículos van a materiales
+      : [];  // Las otras partidas solo tienen valores base
     
     // Calcular totales de artículos para marzo y agosto
     const totalMarzoArticulos = articulosDePartida.reduce((sum, art) => sum + art.totales.marzo, 0)
