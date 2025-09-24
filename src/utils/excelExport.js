@@ -1,5 +1,47 @@
 import * as XLSX from 'xlsx'
 
+// Función para crear encabezado del presupuesto
+const crearEncabezadoPresupuesto = () => {
+  return [
+    ["FORMATO PARA LA FORMULACIÓN DEL PRESUPUESTO OPERATIVO 2025"],
+    [""],
+    ["UNIDAD RESPONSABLE :", "030000", "", "FACULTAD DE INGENIERÍA"],
+    ["UNID. CENTRO DE COSTOS :", "032500", "", "CENTRO DE DOCUMENTACIÓN"],
+    ["ACTIVIDAD:", "0009", "", "ACTIVIDAD OPERATIVA"],
+    [""]
+  ]
+}
+
+// Función para aplicar estilos y bordes
+const aplicarEstilosYBordes = (ws, filaInicio, filaFin, colInicio, colFin) => {
+  const border = {
+    top: { style: 'thin' },
+    bottom: { style: 'thin' },
+    left: { style: 'thin' },
+    right: { style: 'thin' }
+  }
+
+  // Aplicar bordes a todas las celdas de la tabla
+  for (let row = filaInicio; row <= filaFin; row++) {
+    for (let col = colInicio; col <= colFin; col++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: row, c: col })
+      
+      if (!ws[cellAddress]) {
+        ws[cellAddress] = { v: '', t: 's' }
+      }
+      
+      // Aplicar solo bordes y alineación
+      ws[cellAddress].s = {
+        border: border,
+        alignment: { 
+          horizontal: col === 0 ? 'left' : 'center',
+          vertical: 'center'
+        }
+      }
+    }
+  }
+}
+
 export const exportarAExcel = (datos, nombreArchivo, nombreHoja = 'Hoja1') => {
   try {
     // Crear un nuevo libro de trabajo
@@ -40,8 +82,159 @@ export const exportarMultiplesHojas = (datosHojas, nombreArchivo) => {
     const wb = XLSX.utils.book_new()
     
     // Agregar cada conjunto de datos como una hoja separada
-    datosHojas.forEach(({ datos, nombreHoja }) => {
-      const ws = XLSX.utils.json_to_sheet(datos)
+    datosHojas.forEach(({ datos, nombreHoja, conEncabezado = true }) => {
+      let ws
+      let filaInicioDatos = 0
+      
+      if (conEncabezado && nombreHoja.includes('Resumen')) {
+        // Crear hoja con encabezado para resumen de partidas
+        const encabezado = crearEncabezadoPresupuesto()
+        
+        // Crear encabezados de la tabla
+        const encabezadosTabla = datos.length > 0 ? Object.keys(datos[0]) : []
+        
+        // Combinar todo: encabezado + headers de tabla + datos
+        const todosLosDatos = [
+          ...encabezado,
+          encabezadosTabla,  // Fila con nombres de columnas
+          ...datos.map(Object.values)
+        ]
+        
+        // Crear worksheet desde array
+        ws = XLSX.utils.aoa_to_sheet(todosLosDatos)
+        
+        // Aplicar estilos al título principal
+        if (!ws['A1']) {
+          ws['A1'] = { v: 'FORMATO PARA LA FORMULACIÓN DEL PRESUPUESTO OPERATIVO 2025', t: 's' }
+        }
+        ws['A1'].s = {
+          font: { bold: true, size: 14 },
+          alignment: { horizontal: 'center' },
+          border: {
+            top: { style: 'thin' },
+            bottom: { style: 'thin' },
+            left: { style: 'thin' },
+            right: { style: 'thin' }
+          }
+        }
+        
+        // Merge del título
+        ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: encabezadosTabla.length - 1 } }]
+        
+        filaInicioDatos = encabezado.length
+        
+        // Aplicar estilos a los encabezados de la tabla
+        if (encabezadosTabla.length > 0) {
+          for (let col = 0; col < encabezadosTabla.length; col++) {
+            const cellAddress = XLSX.utils.encode_cell({ r: filaInicioDatos, c: col })
+            
+            // Asegurar que la celda existe
+            if (!ws[cellAddress]) {
+              ws[cellAddress] = { v: encabezadosTabla[col], t: 's' }
+            }
+            
+            // Aplicar solo bordes y bold
+            ws[cellAddress].s = {
+              font: { bold: true },
+              alignment: { horizontal: 'center', vertical: 'center' },
+              border: {
+                top: { style: 'thin' },
+                bottom: { style: 'thin' },
+                left: { style: 'thin' },
+                right: { style: 'thin' }
+              }
+            }
+          }
+        }
+        
+        // Aplicar bordes a la tabla de datos
+        if (datos.length > 0) {
+          const numCols = Object.keys(datos[0]).length
+          aplicarEstilosYBordes(ws, filaInicioDatos + 1, filaInicioDatos + datos.length, 0, numCols - 1)
+        }
+        
+      } else if (conEncabezado && nombreHoja.includes('Artículos')) {
+        // Crear hoja con encabezado para detalle de artículos
+        const encabezadoDetalle = [
+          ["FORMATO PARA LA FORMULACIÓN DEL PRESUPUESTO OPERATIVO 2025"],
+          [""],
+          ["UNIDAD RESPONSABLE :", "", "030000", "", "FACULTAD DE INGENIERÍA"],
+          ["UNID. CENTRO DE COSTOS :", "", "032500", "", "CENTRO DE DOCUMENTACIÓN"],
+          ["ACTIVIDAD:", "", "0009", "", "ACTIVIDAD OPERATIVA"],
+          [""]
+        ]
+        
+        // Crear encabezados de la tabla
+        const encabezadosTabla = datos.length > 0 ? Object.keys(datos[0]) : []
+        
+        // Combinar todo: encabezado + headers de tabla + datos
+        const todosLosDatos = [
+          ...encabezadoDetalle,
+          encabezadosTabla,  // Fila con nombres de columnas
+          ...datos.map(Object.values)
+        ]
+        
+        ws = XLSX.utils.aoa_to_sheet(todosLosDatos)
+        
+        // Estilos del título
+        if (!ws['A1']) {
+          ws['A1'] = { v: 'FORMATO PARA LA FORMULACIÓN DEL PRESUPUESTO OPERATIVO 2025', t: 's' }
+        }
+        ws['A1'].s = {
+          font: { bold: true, size: 14 },
+          alignment: { horizontal: 'center' },
+          border: {
+            top: { style: 'thin' },
+            bottom: { style: 'thin' },
+            left: { style: 'thin' },
+            right: { style: 'thin' }
+          }
+        }
+        
+        // Merges
+        ws['!merges'] = [
+          { s: { r: 0, c: 0 }, e: { r: 0, c: encabezadosTabla.length - 1 } }, // Título principal
+          { s: { r: 2, c: 0 }, e: { r: 2, c: 1 } }, // UNIDAD RESPONSABLE (A3:B3)
+          { s: { r: 3, c: 0 }, e: { r: 3, c: 1 } }, // UNID. CENTRO DE COSTOS (A4:B4)
+          { s: { r: 4, c: 0 }, e: { r: 4, c: 1 } }  // ACTIVIDAD (A5:B5)
+        ]
+        
+        filaInicioDatos = encabezadoDetalle.length
+        
+        // Aplicar estilos a los encabezados de la tabla
+        if (encabezadosTabla.length > 0) {
+          for (let col = 0; col < encabezadosTabla.length; col++) {
+            const cellAddress = XLSX.utils.encode_cell({ r: filaInicioDatos, c: col })
+            
+            // Asegurar que la celda existe
+            if (!ws[cellAddress]) {
+              ws[cellAddress] = { v: encabezadosTabla[col], t: 's' }
+            }
+            
+            // Aplicar solo bordes y bold
+            ws[cellAddress].s = {
+              font: { bold: true },
+              alignment: { horizontal: 'center', vertical: 'center' },
+              border: {
+                top: { style: 'thin' },
+                bottom: { style: 'thin' },
+                left: { style: 'thin' },
+                right: { style: 'thin' }
+              }
+            }
+          }
+        }
+        
+        // Aplicar bordes a la tabla de datos
+        if (datos.length > 0) {
+          const numCols = Object.keys(datos[0]).length
+          aplicarEstilosYBordes(ws, filaInicioDatos + 1, filaInicioDatos + datos.length, 0, numCols - 1)
+        }
+        
+      } else {
+        // Hoja simple sin encabezado
+        ws = XLSX.utils.json_to_sheet(datos)
+      }
       
       // Ajustar ancho de columnas
       const colWidths = []
@@ -51,7 +244,7 @@ export const exportarMultiplesHojas = (datosHojas, nombreArchivo) => {
             key.length,
             ...datos.map(row => String(row[key] || '').length)
           )
-          colWidths[index] = { wch: Math.min(maxLength + 2, 50) }
+          colWidths[index] = { wch: Math.min(maxLength + 2, 30) }
         })
         ws['!cols'] = colWidths
       }
@@ -80,7 +273,7 @@ export const formatearMaterialesParaExcel = (materiales) => {
 export const formatearPresupuestoParaExcel = (articulos) => {
   const datosFormateados = articulos.map(articulo => ({
     'Código': articulo.codigo,
-    'Descripción': articulo.nombre,
+    'Nombre del Artículo': articulo.nombre,
     'Precio Unitario': articulo.precioPresupuesto.toFixed(2),
     'Cantidad Marzo': articulo.cantidades.marzo,
     'Cantidad Agosto': articulo.cantidades.agosto,
@@ -96,7 +289,7 @@ export const formatearPresupuestoParaExcel = (articulos) => {
 
   datosFormateados.push({
     'Código': '',
-    'Descripción': '🔸 TOTALES GENERALES',
+    'Nombre del Artículo': '🔸 TOTALES GENERALES',
     'Precio Unitario': '',
     'Cantidad Marzo': '',
     'Cantidad Agosto': '',

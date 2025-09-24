@@ -261,14 +261,16 @@ const BudgetSystem = () => {
       const datosResumen = formatearResumenPartidasParaExcel(articulosPresupuesto, valoresPartidas, PARTIDAS_PRESUPUESTARIAS)
       datosHojas.push({
         datos: datosResumen,
-        nombreHoja: 'Resumen por Partidas'
+        nombreHoja: 'Resumen por Partidas',
+        conEncabezado: true
       })
       
       // Hoja 2: Detalle de artículos del presupuesto
       const datosArticulos = formatearPresupuestoParaExcel(articulosPresupuesto)
       datosHojas.push({
         datos: datosArticulos,
-        nombreHoja: 'Detalle de Artículos'
+        nombreHoja: 'Detalle de Artículos',
+        conEncabezado: true
       })
       
       const exito = exportarMultiplesHojas(datosHojas, nombreArchivo)

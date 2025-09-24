@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { PARTIDAS_PRESUPUESTARIAS, createPartidaResumen } from '../types/budget'
+import { PARTIDAS_PRESUPUESTARIAS, createPartidaResumen, getArticulosSinAsignar } from '../types/budget'
 
 const ResumenPartidas = ({ articulos, valoresPartidas, onActualizarValorPartida }) => {
   const [valoresLocales, setValoresLocales] = useState({})
@@ -245,6 +245,47 @@ const ResumenPartidas = ({ articulos, valoresPartidas, onActualizarValorPartida 
             })}
           </div>
         </div>
+        
+        {/* Artículos sin asignar - Advertencia */}
+        {(() => {
+          const articulosSinAsignar = getArticulosSinAsignar(articulos)
+          if (articulosSinAsignar.length === 0) return null
+          
+          return (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 shadow-lg">
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0">
+                  <svg className="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-lg font-bold text-yellow-800 mb-2">
+                    ⚠️ Artículos sin asignar a partidas ({articulosSinAsignar.length})
+                  </h4>
+                  <p className="text-yellow-700 mb-3">
+                    Los siguientes artículos aparecen en "Detalle de Artículos" pero NO se incluyen en el resumen por partidas:
+                  </p>
+                  <div className="bg-white rounded border border-yellow-200 p-3">
+                    {articulosSinAsignar.map(articulo => (
+                      <div key={articulo.id} className="flex justify-between items-center py-1 border-b border-yellow-100 last:border-b-0">
+                        <span className="font-medium text-gray-800">
+                          {articulo.codigo} - {articulo.nombre}
+                        </span>
+                        <span className="text-sm text-gray-600">
+                          Total: S/. {formatCurrency(articulo.totales.total)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-sm text-yellow-600 mt-2">
+                    💡 <strong>Solución:</strong> Estos artículos necesitan ser asignados a una partida presupuestaria en la configuración del sistema.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )
+        })()}
     </div>
   )
 }
