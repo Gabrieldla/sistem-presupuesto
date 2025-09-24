@@ -354,7 +354,7 @@ export const formatearResumenPartidasParaExcel = (articulos, valoresPartidas, pa
   
   // Agregar fila de gran total
   const filaTotales = {
-    'Nombre de Partidas': 'GRAN TOTAL ANUAL:',
+    'Nombre de Partidas': '🔸 GRAN TOTAL ANUAL:',
     'Código ERP': ''
   }
   
