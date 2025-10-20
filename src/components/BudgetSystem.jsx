@@ -216,14 +216,40 @@ const BudgetSystem = () => {
       const material = materialesDisponibles.find(m => m.codigo === codigoOriginal)
       if (material) {
         await editarMaterial(material.id, nuevoCodigo, nuevoNombre, nuevoPrecio)
+        
+        // Actualizar catálogo de materiales
         setMaterialesDisponibles(prev => prev.map(m => 
           m.id === material.id 
             ? { ...m, codigo: nuevoCodigo, nombre: nuevoNombre, precio: parseFloat(nuevoPrecio) || 0 }
             : m
         ))
+
+        // Actualizar artículos del presupuesto que tengan este código
+        setArticulosPresupuesto(prev => prev.map(articulo => {
+          if (articulo.codigo === codigoOriginal) {
+            const nuevoPrecioNum = parseFloat(nuevoPrecio) || 0
+            // Recalcular totales con el nuevo precio
+            const nuevosTotales = {
+              marzo: articulo.cantidades.marzo * nuevoPrecioNum,
+              agosto: articulo.cantidades.agosto * nuevoPrecioNum,
+              total: (articulo.cantidades.marzo * nuevoPrecioNum) + (articulo.cantidades.agosto * nuevoPrecioNum)
+            }
+            
+            return {
+              ...articulo,
+              codigo: nuevoCodigo,
+              nombre: nuevoNombre,
+              precioPresupuesto: nuevoPrecioNum, // Campo correcto para la tabla
+              totales: nuevosTotales
+            }
+          }
+          return articulo
+        }))
+
+        mostrarNotificacion(`Material "${nuevoNombre}" actualizado correctamente en catálogo y presupuesto`, 'success')
       }
     } catch (err) {
-      alert('Error al editar material: ' + err.message)
+      mostrarNotificacion('Error al editar material: ' + err.message, 'error')
     }
   }
 
@@ -232,11 +258,28 @@ const BudgetSystem = () => {
     try {
       const material = materialesDisponibles.find(m => m.codigo === codigo)
       if (material) {
+        // Verificar si el material está siendo usado en el presupuesto
+        const enUso = articulosPresupuesto.some(art => art.codigo === codigo)
+        
+        if (enUso) {
+          if (!confirm(`El material "${material.nombre}" está siendo usado en el presupuesto. ¿Deseas eliminarlo del catálogo y del presupuesto?`)) {
+            return
+          }
+        }
+
         await eliminarMaterial(material.id)
         setMaterialesDisponibles(prev => prev.filter(m => m.id !== material.id))
+        
+        // Eliminar también del presupuesto si está en uso
+        if (enUso) {
+          setArticulosPresupuesto(prev => prev.filter(art => art.codigo !== codigo))
+          mostrarNotificacion(`Material "${material.nombre}" eliminado del catálogo y del presupuesto`, 'success')
+        } else {
+          mostrarNotificacion(`Material "${material.nombre}" eliminado del catálogo`, 'success')
+        }
       }
     } catch (err) {
-      alert('Error al eliminar material: ' + err.message)
+      mostrarNotificacion('Error al eliminar material: ' + err.message, 'error')
     }
   }
 
