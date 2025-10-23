@@ -219,26 +219,20 @@ const GestorInventario = ({ articulosPresupuesto, onActualizarInventario }) => {
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center space-x-4">
             <h2 className="text-2xl font-bold text-gray-800">
-              Gestión de Inventario y Aprobaciones
+              Gestión de Inventario
             </h2>
-            <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium text-gray-700">Período:</label>
-              <select
-                value={periodoActual}
-                onChange={(e) => setPeriodoActual(e.target.value)}
-                className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium"
-              >
-                <option value="marzo">Marzo 2024</option>
-                <option value="agosto">Agosto 2024</option>
-              </select>
-            </div>
           </div>
-          <button
-            onClick={exportarInventario}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Exportar Inventario
-          </button>
+          <div className="flex items-center space-x-3">
+            <label className="text-lg font-semibold text-gray-700">Período:</label>
+            <select
+              value={periodoActual}
+              onChange={(e) => setPeriodoActual(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-lg font-semibold bg-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="marzo">Marzo 2024</option>
+              <option value="agosto">Agosto 2024</option>
+            </select>
+          </div>
         </div>
 
 
@@ -517,6 +511,22 @@ const GestorInventario = ({ articulosPresupuesto, onActualizarInventario }) => {
               </p>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Botón de Exportar Inventario - Al final */}
+      {modoVista === 'tabla' && inventario.filter(item => {
+        const tieneCantidadPeriodo = periodoActual === 'marzo' ? item.cantidadSolicitadaMarzo > 0 : item.cantidadSolicitadaAgosto > 0
+        const cantidadAprobada = periodoActual === 'marzo' ? item.cantidadAprobadaMarzo : item.cantidadAprobadaAgosto
+        return tieneCantidadPeriodo && cantidadAprobada > 0
+      }).length > 0 && (
+        <div className="flex justify-center">
+          <button
+            onClick={exportarInventario}
+            className="px-6 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors text-lg"
+          >
+            📊 Exportar Inventario a Excel
+          </button>
         </div>
       )}
 
