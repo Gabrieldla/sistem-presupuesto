@@ -6,11 +6,11 @@ import ArticuloSelector from './ArticuloSelector'
 import TablaArticulos from './TablaArticulos'
 import ResumenPartidas from './ResumenPartidas'
 import GestorMateriales from './GestorMateriales'
-
+import GestorInventario from './GestorInventario'
 import AdminNav from './AdminNav'
 
 const BudgetSystem = () => {
-  const [vistaActual, setVistaActual] = useState('presupuesto') // 'presupuesto', 'catalogo'
+  const [vistaActual, setVistaActual] = useState('presupuesto') // 'presupuesto', 'catalogo', 'inventario'
   const [articulosPresupuesto, setArticulosPresupuesto] = useState([])
   const [materialesDisponibles, setMaterialesDisponibles] = useState([])
   const [valoresPartidas, setValoresPartidas] = useState(() => {
@@ -431,6 +431,16 @@ const BudgetSystem = () => {
               >
                 ⚙️ Gestionar Catálogo ({materialesDisponibles.length})
               </button>
+              <button
+                onClick={() => setVistaActual('inventario')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  vistaActual === 'inventario'
+                    ? 'border-emerald-500 text-emerald-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                📦 Inventario ({articulosPresupuesto.length})
+              </button>
 
             </nav>
           </div>
@@ -515,7 +525,7 @@ const BudgetSystem = () => {
               </div>
             )}
           </div>
-        ) : (
+        ) : vistaActual === 'catalogo' ? (
           // Vista del Gestor de Catálogo
           <div className="bg-white p-6 rounded-lg shadow-md">
             <div className="flex justify-between items-center mb-6">
@@ -535,6 +545,25 @@ const BudgetSystem = () => {
               onAgregarMaterial={agregarNuevoMaterial}
               onEditarMaterial={editarMaterialCatalogo}
               onEliminarMaterial={eliminarMaterialCatalogo}
+            />
+          </div>
+        ) : (
+          // Vista del Gestor de Inventario
+          <div>
+            <div className="mb-6 flex justify-start">
+              <button
+                onClick={() => setVistaActual('presupuesto')}
+                className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+              >
+                ← Volver al Presupuesto
+              </button>
+            </div>
+            <GestorInventario 
+              articulosPresupuesto={articulosPresupuesto}
+              onActualizarInventario={(inventarioData) => {
+                // TODO: Guardar datos del inventario
+                console.log('Datos del inventario:', inventarioData)
+              }}
             />
           </div>
         )}

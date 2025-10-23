@@ -70,7 +70,7 @@ const TablaArticulos = ({ articulos, onEliminarArticulo, onActualizarArticulo })
             </tr>
           </thead>
           <tbody>
-            {articulos.map((articulo, index) => (
+            {articulos.sort((a, b) => a.nombre.localeCompare(b.nombre)).map((articulo, index) => (
               <tr key={articulo.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                 {/* Código */}
                 <td className="border border-gray-300 px-3 py-2 text-center text-sm font-medium">
