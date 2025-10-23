@@ -410,19 +410,6 @@ const GestorInventario = ({ articulosPresupuesto, onActualizarInventario }) => {
                     </div>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => {
-                          // Saltar sin aprobar (quedará en pendiente = rechazado al finalizar)
-                          if (materialActualIndex < inventarioFiltrado.length - 1) {
-                            setMaterialActualIndex(materialActualIndex + 1)
-                            setMostrarCampoManual(false)
-                          }
-                        }}
-                        disabled={materialActualIndex >= inventarioFiltrado.length - 1}
-                        className="px-4 py-2 bg-gray-500 hover:bg-gray-600 disabled:bg-gray-300 text-white rounded-lg transition-colors text-sm"
-                      >
-                        Saltar
-                      </button>
-                      <button
                         onClick={verTabla}
                         className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-sm"
                       >
