@@ -126,10 +126,63 @@ const GestorInventario = ({ articulosPresupuesto, onActualizarInventario }) => {
     }
   }
 
+  // Función para eliminar/resetear un artículo del inventario
+  const eliminarArticuloInventario = async (id, periodo = null) => {
+    try {
+      if (periodo) {
+        // Resetear solo un período específico
+        const campo = periodo === 'marzo' ? 'cantidadAprobadaMarzo' : 'cantidadAprobadaAgosto'
+        await actualizarCantidadArticulo(id, campo, 0)
+      } else {
+        // Resetear ambos períodos
+        setInventario(prev => prev.map(item => {
+          if (item.id === id) {
+            return { 
+              ...item, 
+              cantidadAprobadaMarzo: 0,
+              cantidadAprobadaAgosto: 0
+            }
+          }
+          return item
+        }))
+
+        // Actualizar en la BD
+        const { data: existente, error: errorConsulta } = await supabase
+          .from('inventario')
+          .select('id')
+          .eq('articulo_id', id)
+          .single()
+
+        if (existente) {
+          const { error: errorUpdate } = await supabase
+            .from('inventario')
+            .update({
+              cantidad_marzo: 0,
+              cantidad_agosto: 0,
+              updated_at: new Date().toISOString()
+            })
+            .eq('articulo_id', id)
+
+          if (errorUpdate) throw errorUpdate
+        }
+      }
+    } catch (error) {
+      console.error('Error eliminando del inventario:', error)
+      alert('Error al eliminar del inventario. Por favor intenta de nuevo.')
+    }
+  }
+
   // Filtrar artículos según búsqueda del período actual
   const inventarioFiltrado = inventario.filter(item => {
     const coincideBusqueda = item.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
                             item.codigo.toLowerCase().includes(busqueda.toLowerCase())
+    
+    // Para "ambos", mostrar artículos que tienen cantidad en cualquier período
+    if (periodoActual === 'ambos') {
+      const tieneCantidadMarzo = item.cantidadSolicitadaMarzo > 0
+      const tieneCantidadAgosto = item.cantidadSolicitadaAgosto > 0
+      return coincideBusqueda && (tieneCantidadMarzo || tieneCantidadAgosto)
+    }
     
     // Solo mostrar artículos que tienen cantidad solicitada para el período actual
     const tieneCantidadPeriodo = periodoActual === 'marzo' 
@@ -139,25 +192,48 @@ const GestorInventario = ({ articulosPresupuesto, onActualizarInventario }) => {
     return coincideBusqueda && tieneCantidadPeriodo
   }).sort((a, b) => a.nombre.localeCompare(b.nombre))
 
-  // Resetear índice cuando cambian los filtros
+  // Resetear índice cuando cambian los filtros y cambiar a tabla si es "ambos"
   useEffect(() => {
     setMaterialActualIndex(0)
+    if (periodoActual === 'ambos') {
+      setModoVista('tabla')
+    }
   }, [busqueda, periodoActual])
 
   // Función para exportar inventario
   const exportarInventario = () => {
     // Filtrar solo los materiales con cantidad asignada
     const inventarioParaExportar = inventario.filter(item => {
-      const tieneCantidadPeriodo = periodoActual === 'marzo' ? item.cantidadSolicitadaMarzo > 0 : item.cantidadSolicitadaAgosto > 0
-      const cantidadAprobada = periodoActual === 'marzo' ? item.cantidadAprobadaMarzo : item.cantidadAprobadaAgosto
-      return tieneCantidadPeriodo && cantidadAprobada > 0
-    }).map(item => ({
-      Codigo: item.codigo,
-      Descripcion: item.nombre,
-      'Cantidad en Inventario': periodoActual === 'marzo' ? item.cantidadAprobadaMarzo : item.cantidadAprobadaAgosto,
-      'Precio Unitario': item.precioPresupuesto.toLocaleString(),
-      'Valor Total': ((periodoActual === 'marzo' ? item.cantidadAprobadaMarzo : item.cantidadAprobadaAgosto) * item.precioPresupuesto).toLocaleString()
-    }))
+      if (periodoActual === 'ambos') {
+        const tieneCantidadMarzo = item.cantidadSolicitadaMarzo > 0
+        const tieneCantidadAgosto = item.cantidadSolicitadaAgosto > 0
+        const cantidadAprobadaMarzo = item.cantidadAprobadaMarzo > 0
+        const cantidadAprobadaAgosto = item.cantidadAprobadaAgosto > 0
+        return (tieneCantidadMarzo || tieneCantidadAgosto) && (cantidadAprobadaMarzo || cantidadAprobadaAgosto)
+      } else {
+        const tieneCantidadPeriodo = periodoActual === 'marzo' ? item.cantidadSolicitadaMarzo > 0 : item.cantidadSolicitadaAgosto > 0
+        const cantidadAprobada = periodoActual === 'marzo' ? item.cantidadAprobadaMarzo : item.cantidadAprobadaAgosto
+        return tieneCantidadPeriodo && cantidadAprobada > 0
+      }
+    }).map(item => {
+      if (periodoActual === 'ambos') {
+        const totalFinal = item.cantidadAprobadaMarzo + item.cantidadAprobadaAgosto
+        return {
+          Codigo: item.codigo,
+          Descripcion: item.nombre,
+          'Marzo 2025': item.cantidadAprobadaMarzo,
+          'Agosto 2025': item.cantidadAprobadaAgosto,
+          'Total Final': totalFinal
+        }
+      } else {
+        const cantidadInventario = periodoActual === 'marzo' ? item.cantidadAprobadaMarzo : item.cantidadAprobadaAgosto
+        return {
+          Codigo: item.codigo,
+          Descripcion: item.nombre,
+          'Cantidad en Inventario': cantidadInventario
+        }
+      }
+    })
 
     if (inventarioParaExportar.length === 0) {
       alert('No hay materiales en el inventario para exportar')
@@ -169,12 +245,14 @@ const GestorInventario = ({ articulosPresupuesto, onActualizarInventario }) => {
     const workbook = XLSX.utils.book_new()
     
     // Título del período
-    const periodoTexto = periodoActual.charAt(0).toUpperCase() + periodoActual.slice(1)
+    const periodoTexto = periodoActual === 'ambos' 
+      ? 'Final_Ambos_Periodos' 
+      : periodoActual.charAt(0).toUpperCase() + periodoActual.slice(1)
     XLSX.utils.book_append_sheet(workbook, worksheet, `Inventario ${periodoTexto}`)
     
     // Descargar archivo
     const fecha = new Date().toLocaleDateString().replace(/\//g, '-')
-    XLSX.writeFile(workbook, `Inventario_${periodoTexto}_2024_${fecha}.xlsx`)
+    XLSX.writeFile(workbook, `Inventario_${periodoTexto}_2025_${fecha}.xlsx`)
   }
 
   // Función para ir a la vista de tabla
@@ -229,8 +307,9 @@ const GestorInventario = ({ articulosPresupuesto, onActualizarInventario }) => {
               onChange={(e) => setPeriodoActual(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-lg text-lg font-semibold bg-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="marzo">Marzo 2024</option>
-              <option value="agosto">Agosto 2024</option>
+              <option value="marzo">Marzo 2025</option>
+              <option value="agosto">Agosto 2025</option>
+              <option value="ambos">Inventario Final (Ambos Períodos)</option>
             </select>
           </div>
         </div>
@@ -255,7 +334,7 @@ const GestorInventario = ({ articulosPresupuesto, onActualizarInventario }) => {
       </div>
 
       {/* Vista de material uno por uno */}
-      {inventarioFiltrado.length > 0 && modoVista === 'revision' && (
+      {inventarioFiltrado.length > 0 && modoVista === 'revision' && periodoActual !== 'ambos' && (
         <div className="bg-white rounded-lg shadow-md">
           {(() => {
             const materialActual = inventarioFiltrado[materialActualIndex] || inventarioFiltrado[0]
@@ -437,14 +516,19 @@ const GestorInventario = ({ articulosPresupuesto, onActualizarInventario }) => {
           <div className="p-6 border-b border-gray-200">
             <div className="flex justify-between items-center">
               <h3 className="text-xl font-bold text-gray-900">
-                Inventario - {periodoActual.charAt(0).toUpperCase() + periodoActual.slice(1)} 2024
+                {periodoActual === 'ambos' 
+                  ? 'Inventario Final - Ambos Períodos 2025'
+                  : `Inventario - ${periodoActual.charAt(0).toUpperCase() + periodoActual.slice(1)} 2025`
+                }
               </h3>
-              <button
-                onClick={() => setModoVista('revision')}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-              >
-                Volver a Revisión
-              </button>
+              {periodoActual !== 'ambos' && (
+                <button
+                  onClick={() => setModoVista('revision')}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                >
+                  Volver a Revisión
+                </button>
+              )}
             </div>
           </div>
           
@@ -455,23 +539,54 @@ const GestorInventario = ({ articulosPresupuesto, onActualizarInventario }) => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Material
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Cantidad en Inventario
-                  </th>
+                  {periodoActual === 'ambos' ? (
+                    <>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Marzo 2025
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Agosto 2025
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Total Final
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Acciones
+                      </th>
+                    </>
+                  ) : (
+                    <>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Cantidad en Inventario
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Acciones
+                      </th>
+                    </>
+                  )}
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {inventario.filter(item => {
-                  const tieneCantidadPeriodo = periodoActual === 'marzo' ? item.cantidadSolicitadaMarzo > 0 : item.cantidadSolicitadaAgosto > 0
-                  const cantidadAprobada = periodoActual === 'marzo' ? item.cantidadAprobadaMarzo : item.cantidadAprobadaAgosto
-                  return tieneCantidadPeriodo && cantidadAprobada > 0
+                  if (periodoActual === 'ambos') {
+                    // Para "ambos", mostrar todos los que tienen cantidad asignada en cualquier período
+                    const tieneCantidadMarzo = item.cantidadSolicitadaMarzo > 0
+                    const tieneCantidadAgosto = item.cantidadSolicitadaAgosto > 0
+                    const cantidadAprobadaMarzo = item.cantidadAprobadaMarzo > 0
+                    const cantidadAprobadaAgosto = item.cantidadAprobadaAgosto > 0
+                    return (tieneCantidadMarzo || tieneCantidadAgosto) && (cantidadAprobadaMarzo || cantidadAprobadaAgosto)
+                  } else {
+                    const tieneCantidadPeriodo = periodoActual === 'marzo' ? item.cantidadSolicitadaMarzo > 0 : item.cantidadSolicitadaAgosto > 0
+                    const cantidadAprobada = periodoActual === 'marzo' ? item.cantidadAprobadaMarzo : item.cantidadAprobadaAgosto
+                    return tieneCantidadPeriodo && cantidadAprobada > 0
+                  }
                 }).sort((a, b) => a.nombre.localeCompare(b.nombre)).map((item) => {
-                  const cantidadSolicitada = periodoActual === 'marzo' 
-                    ? item.cantidadSolicitadaMarzo 
-                    : item.cantidadSolicitadaAgosto
+                  const cantidadAprobadaMarzo = item.cantidadAprobadaMarzo
+                  const cantidadAprobadaAgosto = item.cantidadAprobadaAgosto
                   const cantidadAprobada = periodoActual === 'marzo' 
                     ? item.cantidadAprobadaMarzo 
                     : item.cantidadAprobadaAgosto
+                  const totalFinal = cantidadAprobadaMarzo + cantidadAprobadaAgosto
                   
                   return (
                     <tr key={item.id} className="hover:bg-gray-50">
@@ -481,9 +596,81 @@ const GestorInventario = ({ articulosPresupuesto, onActualizarInventario }) => {
                           <div className="text-sm text-gray-500">Código: {item.codigo}</div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-center">
-                        <span className="text-2xl font-bold text-green-600">{cantidadAprobada}</span>
-                      </td>
+                      {periodoActual === 'ambos' ? (
+                        <>
+                          <td className="px-6 py-4 text-center">
+                            <span className="text-xl font-bold text-blue-600">{cantidadAprobadaMarzo}</span>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <span className="text-xl font-bold text-blue-600">{cantidadAprobadaAgosto}</span>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <span className="text-2xl font-bold text-green-600">{totalFinal}</span>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <div className="flex justify-center gap-2">
+                              {cantidadAprobadaMarzo > 0 && (
+                                <button
+                                  onClick={() => {
+                                    if (confirm(`¿Eliminar cantidad de Marzo para "${item.nombre}"?`)) {
+                                      eliminarArticuloInventario(item.id, 'marzo')
+                                    }
+                                  }}
+                                  className="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition-colors"
+                                  title="Eliminar cantidad de Marzo"
+                                >
+                                  🗑️ Mar
+                                </button>
+                              )}
+                              {cantidadAprobadaAgosto > 0 && (
+                                <button
+                                  onClick={() => {
+                                    if (confirm(`¿Eliminar cantidad de Agosto para "${item.nombre}"?`)) {
+                                      eliminarArticuloInventario(item.id, 'agosto')
+                                    }
+                                  }}
+                                  className="px-2 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600 transition-colors"
+                                  title="Eliminar cantidad de Agosto"
+                                >
+                                  🗑️ Ago
+                                </button>
+                              )}
+                              {(cantidadAprobadaMarzo > 0 || cantidadAprobadaAgosto > 0) && (
+                                <button
+                                  onClick={() => {
+                                    if (confirm(`¿Eliminar TODAS las cantidades para "${item.nombre}"?`)) {
+                                      eliminarArticuloInventario(item.id)
+                                    }
+                                  }}
+                                  className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition-colors"
+                                  title="Eliminar todas las cantidades"
+                                >
+                                  🗑️ Todo
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td className="px-6 py-4 text-center">
+                            <span className="text-2xl font-bold text-green-600">{cantidadAprobada}</span>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <button
+                              onClick={() => {
+                                if (confirm(`¿Eliminar "${item.nombre}" del inventario de ${periodoActual}?`)) {
+                                  eliminarArticuloInventario(item.id, periodoActual)
+                                }
+                              }}
+                              className="px-3 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition-colors"
+                              title={`Eliminar del inventario de ${periodoActual}`}
+                            >
+                              🗑️ Eliminar
+                            </button>
+                          </td>
+                        </>
+                      )}
                     </tr>
                   )
                 })}
@@ -493,9 +680,17 @@ const GestorInventario = ({ articulosPresupuesto, onActualizarInventario }) => {
           
           {/* Mensaje si no hay materiales con cantidad asignada */}
           {inventario.filter(item => {
-            const tieneCantidadPeriodo = periodoActual === 'marzo' ? item.cantidadSolicitadaMarzo > 0 : item.cantidadSolicitadaAgosto > 0
-            const cantidadAprobada = periodoActual === 'marzo' ? item.cantidadAprobadaMarzo : item.cantidadAprobadaAgosto
-            return tieneCantidadPeriodo && cantidadAprobada > 0
+            if (periodoActual === 'ambos') {
+              const tieneCantidadMarzo = item.cantidadSolicitadaMarzo > 0
+              const tieneCantidadAgosto = item.cantidadSolicitadaAgosto > 0
+              const cantidadAprobadaMarzo = item.cantidadAprobadaMarzo > 0
+              const cantidadAprobadaAgosto = item.cantidadAprobadaAgosto > 0
+              return (tieneCantidadMarzo || tieneCantidadAgosto) && (cantidadAprobadaMarzo || cantidadAprobadaAgosto)
+            } else {
+              const tieneCantidadPeriodo = periodoActual === 'marzo' ? item.cantidadSolicitadaMarzo > 0 : item.cantidadSolicitadaAgosto > 0
+              const cantidadAprobada = periodoActual === 'marzo' ? item.cantidadAprobadaMarzo : item.cantidadAprobadaAgosto
+              return tieneCantidadPeriodo && cantidadAprobada > 0
+            }
           }).length === 0 && (
             <div className="p-8 text-center bg-gray-50">
               <div className="text-gray-500 mb-2">
@@ -505,9 +700,12 @@ const GestorInventario = ({ articulosPresupuesto, onActualizarInventario }) => {
               </div>
               <h4 className="text-lg font-medium text-gray-900 mb-2">Inventario Vacío</h4>
               <p className="text-gray-600">
-                No hay materiales con cantidad asignada para el período de {periodoActual} 2024.
+                {periodoActual === 'ambos' 
+                  ? 'No hay materiales con cantidad asignada en ningún período de 2025.'
+                  : `No hay materiales con cantidad asignada para el período de ${periodoActual} 2025.`
+                }
                 <br />
-                Vuelve a la revisión para asignar cantidades a algunos materiales.
+                {periodoActual !== 'ambos' && 'Vuelve a la revisión para asignar cantidades a algunos materiales.'}
               </p>
             </div>
           )}
@@ -516,9 +714,17 @@ const GestorInventario = ({ articulosPresupuesto, onActualizarInventario }) => {
 
       {/* Botón de Exportar Inventario - Al final */}
       {modoVista === 'tabla' && inventario.filter(item => {
-        const tieneCantidadPeriodo = periodoActual === 'marzo' ? item.cantidadSolicitadaMarzo > 0 : item.cantidadSolicitadaAgosto > 0
-        const cantidadAprobada = periodoActual === 'marzo' ? item.cantidadAprobadaMarzo : item.cantidadAprobadaAgosto
-        return tieneCantidadPeriodo && cantidadAprobada > 0
+        if (periodoActual === 'ambos') {
+          const tieneCantidadMarzo = item.cantidadSolicitadaMarzo > 0
+          const tieneCantidadAgosto = item.cantidadSolicitadaAgosto > 0
+          const cantidadAprobadaMarzo = item.cantidadAprobadaMarzo > 0
+          const cantidadAprobadaAgosto = item.cantidadAprobadaAgosto > 0
+          return (tieneCantidadMarzo || tieneCantidadAgosto) && (cantidadAprobadaMarzo || cantidadAprobadaAgosto)
+        } else {
+          const tieneCantidadPeriodo = periodoActual === 'marzo' ? item.cantidadSolicitadaMarzo > 0 : item.cantidadSolicitadaAgosto > 0
+          const cantidadAprobada = periodoActual === 'marzo' ? item.cantidadAprobadaMarzo : item.cantidadAprobadaAgosto
+          return tieneCantidadPeriodo && cantidadAprobada > 0
+        }
       }).length > 0 && (
         <div className="flex justify-center">
           <button
