@@ -364,8 +364,17 @@ const BudgetSystem = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navegación de admin */}
+      {/* Botón de cerrar sesión */}
       <AdminNav />
+      
+      {/* Banner del encabezado - Ocupa toda la pantalla */}
+      <div className="w-full h-[150px] overflow-hidden">
+        <img 
+          src="/REPOSITORIO DE EXAMENES.png" 
+          alt="Repositorio de Exámenes" 
+          className="w-full h-full object-cover"
+        />
+      </div>
       
       <div className="p-4">
         <div className="max-w-7xl mx-auto">

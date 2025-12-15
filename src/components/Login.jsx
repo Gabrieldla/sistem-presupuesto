@@ -19,7 +19,12 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
+    <div className="min-h-screen flex items-center justify-center px-4" style={{
+      backgroundImage: 'url(/fondo2.avif)',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat'
+    }}>
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
         {/* Logo y Header */}
         <div className="text-center mb-8">
@@ -80,7 +85,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-orange-500 text-white py-3 px-4 rounded-lg hover:bg-orange-600 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
+            className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
           >
             {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
           </button>
